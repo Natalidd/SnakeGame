@@ -1,13 +1,24 @@
 ﻿
 using Snake;
-int dimention = 10;
+int dimension = 10;
 Directions directions = Directions.up;
-Field field = new Field(dimention);
+Field field = new Field(dimension);
 SnakeBody snake = new SnakeBody();
 Fruit apple = new Fruit();
 bool move = true;
 
+bool AppleMatchesSnake()
+{
+    for (int i = 1; i <= snake.Body.Count - 1; i++)
+    {
+        if (snake.Body[i].X == apple.Apple.X && snake.Body[i].Y == apple.Apple.Y)
+        {
+            return true;
+        }
 
+    }
+    return false;
+}
 
 do
 {
@@ -35,39 +46,63 @@ do
     field.FieldArea[apple.Apple.Y, apple.Apple.X] = 'a';
     if (snake.Body[0].X == apple.Apple.X && snake.Body[0].Y == apple.Apple.Y)
     {
-        apple.Apple.X = new Random().Next();
+        field.FieldArea[apple.Apple.Y, apple.Apple.X] = 's';
+        //last cell
+        Cell newTail = snake.Body.Last();
+
+        apple.Apple.X = new Random().Next(0, dimension);
+        apple.Apple.Y = new Random().Next(0, dimension);
+        while (AppleMatchesSnake())
+        {
+            apple.Apple.X = new Random().Next(0, dimension);
+            apple.Apple.Y = new Random().Next(0, dimension);
+        }
+        snake.Body.Add(newTail);
+        field.FieldArea[apple.Apple.Y, apple.Apple.X] = 'a';
+
     }
-
-
-        //print the field with the snake
-        for (int i = 0; i < field.FieldArea.GetLength(0); i++)
+    //print the field with snake
+    for (int k = 0; k < field.FieldArea.GetLength(0); k++)
     {
         for (int j = 0; j < field.FieldArea.GetLength(1); j++)
         {
-            Console.Write(field.FieldArea[j, i]);
+            Console.Write(field.FieldArea[j, k]);
         }
         Console.WriteLine();
     }
 
     //get input
     ConsoleKeyInfo currentDirection = Console.ReadKey();
-
+   
     //get direction from input
     switch (currentDirection.Key)
 
     {
         case ConsoleKey.UpArrow:
-            directions = Directions.up;
+            if (directions != Directions.down)
+            {
+                directions = Directions.up;
+            }
+
             break;
 
         case ConsoleKey.DownArrow:
+            if (directions != Directions.up)
+            {
             directions = Directions.down;
+            }
             break;
         case ConsoleKey.LeftArrow:
+            if (directions != Directions.right)
+            {
             directions = Directions.left;
+            }
             break;
         case ConsoleKey.RightArrow:
-            directions = Directions.right;
+            if (directions != Directions.left)
+            {
+                directions = Directions.right;
+            }
             break;
         default:
             break;
@@ -87,29 +122,6 @@ do
     // head movement
 
 
-
-
-    //Cell head = snake.Body[0];
-    //Cell newHead = new Cell(head.X, head.Y);
-
-    //switch (direction)
-    //{
-    //    case Directions.Up:
-    //        newHead.X--;
-    //        break;
-    //    case Directions.Down:
-    //        newHead.X++;
-    //        break;
-    //    case Directions.Left:
-    //        newHead.Y--;
-    //        break;
-    //    case Directions.Right:
-    //        newHead.Y++;
-    //        break;
-    //}
-
-    //snake.Body.Insert(0, newHead);
-    ////snake.Body.RemoveAt(snake.Body.Count - 1);
 
 
     switch (directions)
@@ -138,16 +150,16 @@ do
     }
     index++;
     if (snake.Body[0].X < 0
-        || snake.Body[0].Y > field.FieldArea.GetLength(0) -1
-        || snake.Body[0].Y < 0 
-        || snake.Body[0].X > field.FieldArea.GetLength(1)-1)
+        || snake.Body[0].Y > field.FieldArea.GetLength(0) - 1
+        || snake.Body[0].Y < 0
+        || snake.Body[0].X > field.FieldArea.GetLength(1) - 1)
     {
         Console.WriteLine("Game Over!");
         break;
     }
-    for (int i = 1; i <= snake.Body.Count - 1; i++)
+    for (int p = 1; p <= snake.Body.Count - 1; p++)
     {
-        if (snake.Body[0].X == snake.Body[i].X && snake.Body[0].Y == snake.Body[i].Y)
+        if (snake.Body[0].X == snake.Body[p].X && snake.Body[0].Y == snake.Body[p].Y)
         {
             Console.Clear();
             Console.WriteLine("Game Over!");
@@ -155,14 +167,13 @@ do
         }
     }
     //algorithm for moving the snake
-    for (int i = index; i < snake.Body.Count; i++)
+    for (int h = index; h < snake.Body.Count; h++)
     {
         backupBody = new Cell(snake.Body[index]);
         snake.Body[index] = backupHead;
         backupHead = new Cell(backupBody);
         index++;
-
     }
 
-} while (move);
 
+} while (move);
