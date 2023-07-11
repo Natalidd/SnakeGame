@@ -1,12 +1,15 @@
 ﻿
 using Snake;
+using Snake.Data;
+using Snake.Data.Models;
+
 int dimension = 10;
 Directions directions = Directions.up;
 Field field = new Field(dimension);
 SnakeBody snake = new SnakeBody();
 Fruit apple = new Fruit();
 bool move = true;
-
+int score = 0;
 bool AppleMatchesSnake()
 {
     for (int i = 1; i <= snake.Body.Count - 1; i++)
@@ -20,6 +23,8 @@ bool AppleMatchesSnake()
     return false;
 }
 
+ConsoleKeyInfo currentDirection = Console.ReadKey();
+
 do
 {
     // fill field
@@ -27,7 +32,7 @@ do
     {
         for (int j = 0; j < field.FieldArea.GetLength(1); j++)
         {
-            field.FieldArea[j, i] = '0';
+            field.FieldArea[j, i] = '░';
         }
     }
     //putting the snake in the field
@@ -47,6 +52,7 @@ do
     if (snake.Body[0].X == apple.Apple.X && snake.Body[0].Y == apple.Apple.Y)
     {
         field.FieldArea[apple.Apple.Y, apple.Apple.X] = 's';
+        score += 5;
         //last cell
         Cell newTail = snake.Body.Last();
 
@@ -61,19 +67,55 @@ do
         field.FieldArea[apple.Apple.Y, apple.Apple.X] = 'a';
 
     }
+
     //print the field with snake
     for (int k = 0; k < field.FieldArea.GetLength(0); k++)
     {
         for (int j = 0; j < field.FieldArea.GetLength(1); j++)
         {
+            if (field.FieldArea[j, k] == 'a')
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+            else if (field.FieldArea[j, k] == 's')
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+            else if (field.FieldArea[j, k] == '░')
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+            }
             Console.Write(field.FieldArea[j, k]);
+
         }
         Console.WriteLine();
     }
 
+
+    Console.WriteLine("score: " + score);
+
+
+    while (Console.KeyAvailable)
+    {
+        currentDirection = Console.ReadKey();
+    }
+    if (currentDirection.Key == ConsoleKey.P)
+    {
+        while (!Console.KeyAvailable)
+        {
+            currentDirection = Console.ReadKey();
+
+        }
+        if (currentDirection.Key != ConsoleKey.P)
+        {
+            Thread.Sleep(1000);
+        }
+    }
+
+
     //get input
-    ConsoleKeyInfo currentDirection = Console.ReadKey();
-   
+    Thread.Sleep(1000);
+
     //get direction from input
     switch (currentDirection.Key)
 
@@ -89,13 +131,13 @@ do
         case ConsoleKey.DownArrow:
             if (directions != Directions.up)
             {
-            directions = Directions.down;
+                directions = Directions.down;
             }
             break;
         case ConsoleKey.LeftArrow:
             if (directions != Directions.right)
             {
-            directions = Directions.left;
+                directions = Directions.left;
             }
             break;
         case ConsoleKey.RightArrow:
@@ -107,14 +149,12 @@ do
         default:
             break;
     }
-    Thread.Sleep(1000);
+
     Console.Clear();
-
-
-
-
+    //currentDirection = Console.ReadKey(true);
     int index = 0;
     //currentCell = snake.Body.First();
+
 
 
     Cell backupHead = new Cell(snake.Body[index]);
@@ -154,6 +194,7 @@ do
         || snake.Body[0].Y < 0
         || snake.Body[0].X > field.FieldArea.GetLength(1) - 1)
     {
+
         Console.WriteLine("Game Over!");
         break;
     }
@@ -177,3 +218,26 @@ do
 
 
 } while (move);
+Console.Write("playerName: ");
+string playerName = Console.ReadLine();
+using (var db = new AppDbContext())
+{
+    HighScores highscore = new HighScores();
+    highscore.Name = playerName;
+    highscore.Score = score;
+    db.Add(highscore);
+    db.SaveChanges();
+    var list = db.HighScores
+        .GroupBy(x => x.Name)
+        .Select(g => new
+        {
+            Name = g.Key,
+            Score = g.Max(y => y.Score)
+        }).
+        ToList();
+    foreach (var item in list)
+    {
+        Console.WriteLine("player name: " + item.Name);
+        Console.WriteLine("score: " + item.Score);
+    }
+}

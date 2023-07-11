@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Snake
 {
-    internal class Fruit
+    public class Fruit
     {
         public Cell Apple { get; set; }
         public Fruit()

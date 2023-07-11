@@ -15,10 +15,10 @@ namespace Snake
             {
                 new Cell(3, 3),
                 new Cell(3, 4),
-                new Cell(3, 5),
+                new Cell(3, 5)/*,
                 new Cell(3, 6),
                 new Cell(3, 7),
-                new Cell(3, 8)
+                new Cell(3, 8)*/
 
             };
         }
