@@ -8,6 +8,10 @@ namespace Snake
 {
     public class Cell
     {
+        public Cell()
+        {
+
+        }
         public int X { get; set; }
         public int Y { get; set; }
         public char DisplayCharacter { get; set; }

@@ -18,6 +18,7 @@ namespace Snake.Data
         }
 
         public DbSet<HighScores> HighScores { get; set; }
+        public DbSet<GameSaves> GameSaves { get; set; } 
 
     }
 }

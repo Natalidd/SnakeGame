@@ -2,6 +2,7 @@
 using Snake;
 using Snake.Data;
 using Snake.Data.Models;
+using System.Text.Json;
 
 int dimension = 10;
 Directions directions = Directions.up;
@@ -10,6 +11,8 @@ SnakeBody snake = new SnakeBody();
 Fruit apple = new Fruit();
 bool move = true;
 int score = 0;
+bool isPaused = false;
+GameStateJson gameState = new GameStateJson();
 bool AppleMatchesSnake()
 {
     for (int i = 1; i <= snake.Body.Count - 1; i++)
@@ -23,8 +26,33 @@ bool AppleMatchesSnake()
     return false;
 }
 
-ConsoleKeyInfo currentDirection = Console.ReadKey();
+Console.WriteLine("Press Enter to start game, press L to Load game ");
 
+ConsoleKeyInfo currentInput = Console.ReadKey();
+if (currentInput.Key == ConsoleKey.L)
+{
+    using (var db = new AppDbContext())
+    {
+        //var list = db.HighScores
+        //.GroupBy(x => x.Name)
+        //.Select(g => new
+        //{
+        //    Name = g.Key,
+        //    Score = g.Max(y => y.Score)
+        //}).
+        //ToList();
+
+
+        var currentGameState = db.GameSaves.FirstOrDefault();
+        GameStateJson? loadedGameState = JsonSerializer.Deserialize<GameStateJson>(currentGameState.GameState);
+        directions = loadedGameState.Direction;
+        score = loadedGameState.Score;
+        snake.Body = loadedGameState.Snake;
+        apple.Apple = loadedGameState.Apple;
+        
+    }
+    isPaused = true;
+}
 do
 {
     // fill field
@@ -94,30 +122,59 @@ do
 
     Console.WriteLine("score: " + score);
 
+    Thread.Sleep(1000);
+
+    //if (currentInput.Key == ConsoleKey.P)
+    //{
+    //    isPaused = true;
+    //}
 
     while (Console.KeyAvailable)
     {
-        currentDirection = Console.ReadKey();
+        currentInput = Console.ReadKey();
+        isPaused = currentInput.Key == ConsoleKey.P;
+        
     }
-    if (currentDirection.Key == ConsoleKey.P)
+
+    if (isPaused)
     {
-        while (!Console.KeyAvailable)
-        {
-            currentDirection = Console.ReadKey();
+        gameState.Snake = snake.Body;
+        gameState.Apple = apple.Apple;
+        gameState.Score = score;
+        gameState.Direction = directions;
 
-        }
-        if (currentDirection.Key != ConsoleKey.P)
+        string jsonString = JsonSerializer.Serialize(gameState);
+        using (var db = new AppDbContext())
         {
-            Thread.Sleep(1000);
+            GameSaves gameSaves = new GameSaves();
+            gameSaves.GameState = jsonString;
+            db.Add(gameSaves);
+            db.SaveChanges();
+           
         }
+
+
+
+            while (true)
+            {
+                while (!Console.KeyAvailable)
+                {
+                    Thread.Sleep(1000);
+
+                }
+                currentInput = Console.ReadKey();
+                if (currentInput.Key == ConsoleKey.P)
+                {
+                    isPaused = false;
+                    break;
+                }
+            }
     }
 
 
-    //get input
-    Thread.Sleep(1000);
 
     //get direction from input
-    switch (currentDirection.Key)
+    switch (currentInput.Key)
 
     {
         case ConsoleKey.UpArrow:
@@ -125,9 +182,7 @@ do
             {
                 directions = Directions.up;
             }
-
             break;
-
         case ConsoleKey.DownArrow:
             if (directions != Directions.up)
             {
@@ -241,3 +296,4 @@ using (var db = new AppDbContext())
         Console.WriteLine("score: " + item.Score);
     }
 }
+
