@@ -16,4 +16,4 @@ namespace Snake
             FieldArea = new char[dimention, dimention];
         }
     }
-}
+}////
