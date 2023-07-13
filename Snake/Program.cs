@@ -41,15 +41,29 @@ if (currentInput.Key == ConsoleKey.L)
         //    Score = g.Max(y => y.Score)
         //}).
         //ToList();
+        Console.WriteLine();
+        Console.Write("Enter ID: ");
 
-
-        var currentGameState = db.GameSaves.FirstOrDefault();
-        GameStateJson? loadedGameState = JsonSerializer.Deserialize<GameStateJson>(currentGameState.GameState);
-        directions = loadedGameState.Direction;
-        score = loadedGameState.Score;
-        snake.Body = loadedGameState.Snake;
-        apple.Apple = loadedGameState.Apple;
-        
+        int id = int.Parse(Console.ReadLine());
+       
+        GameSaves? currentGameState = db.GameSaves.FirstOrDefault( gameSave => gameSave.Id == id);
+        if (currentGameState != null)
+        {
+            
+            GameStateJson? loadedGameState = JsonSerializer.Deserialize<GameStateJson>(currentGameState.GameState);
+            directions = loadedGameState.Direction;
+            score = loadedGameState.Score;
+            snake.Body = loadedGameState.Snake;
+            apple.Apple = loadedGameState.Apple;
+        }        
+        else
+        {
+            Console.WriteLine("Invalid ID");
+            Console.WriteLine("Starting new game");
+            Thread.Sleep(2000);
+            Console.Clear();
+            
+        }
     }
     isPaused = true;
 }
